@@ -201,7 +201,7 @@
 
     <!-- Top -->
     <div id="topbar">
-      <span id="streamTitle">⚔ MICHAEL LIVE ⚔</span>
+      <span id="streamTitle">⚔ <span id="streamUser">rata_juega666</span> ⚔</span>
       <span id="viewerBadge">👁 0 viewers</span>
       <span id="levelBadge">LVL 1</span>
     </div>
@@ -266,6 +266,7 @@ const $ = id => document.getElementById(id);
 
 // ── Render estado ──────────────────────────────────────────────────
 socket.on('state', (s) => {
+  $('streamUser').textContent    = s.username || 'rata_juega666';
   $('levelBadge').textContent   = 'LVL ' + s.playerLevel;
   $('viewerBadge').textContent  = '👁 ' + s.viewers + ' viewers';
   $('bossName').textContent     = s.bossName;
