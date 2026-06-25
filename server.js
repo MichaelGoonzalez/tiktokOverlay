@@ -44,6 +44,7 @@ const gameState = {
   fighters: {},
   rankings: [],
   battleLog: null,
+  championComment: null,
 };
 
 function ensureFighter(username) {
@@ -89,57 +90,82 @@ function updateRankings() {
     .map(([name]) => name);
 }
 
+const LEAGUES = [
+  { name: "gold",    label: "🥇 GOLD",     a: 0, b: 1 },
+  { name: "platinum", label: "🥈 PLATINUM", a: 2, b: 3 },
+  { name: "bronze",  label: "🥉 BRONCE",   a: 4, b: 5 },
+];
+
+function getLeagueByIndex(i) {
+  if (i <= 1) return LEAGUES[0];
+  if (i <= 3) return LEAGUES[1];
+  return LEAGUES[2];
+}
+
 function runBattleTick() {
   if (gameState.rankings.length < 2) return;
-  const challengerName = gameState.rankings[1];
-  const championName = gameState.rankings[0];
-  const challenger = gameState.fighters[challengerName];
-  const champion = gameState.fighters[championName];
-  if (!challenger || !champion) return;
+  const results = [];
 
-  const damage = calcDamage(challenger.level);
-  champion.hp = Math.max(0, champion.hp - damage);
+  for (const league of LEAGUES) {
+    if (gameState.rankings.length <= league.b) continue;
+    const champName = gameState.rankings[league.a];
+    const chalName = gameState.rankings[league.b];
+    const champion = gameState.fighters[champName];
+    const challenger = gameState.fighters[chalName];
+    if (!champion || !challenger) continue;
 
-  const result = {
-    champion: championName,
-    challenger: challengerName,
-    cEmoji: champion.emoji,
-    chEmoji: challenger.emoji,
-    cLevel: champion.level,
-    chLevel: challenger.level,
-    cHp: champion.hp,
-    cMaxHp: champion.maxHp,
-    chHp: challenger.hp,
-    chMaxHp: challenger.maxHp,
-    damage,
-    attacker: challengerName,
-  };
+    const damage = calcDamage(challenger.level);
+    champion.hp = Math.max(0, champion.hp - damage);
 
-  if (champion.hp <= 0) {
-    champion.losses++;
-    challenger.wins++;
-    gameState.rankings[0] = challengerName;
-    gameState.rankings[1] = championName;
-    updateRankings();
+    const result = {
+      league: league.label,
+      champion: champName,
+      challenger: chalName,
+      cEmoji: champion.emoji,
+      chEmoji: challenger.emoji,
+      cLevel: champion.level,
+      chLevel: challenger.level,
+      cHp: champion.hp,
+      cMaxHp: champion.maxHp,
+      chHp: challenger.hp,
+      chMaxHp: challenger.maxHp,
+      damage,
+      attacker: chalName,
+    };
 
-    champion.hp = Math.round(champion.maxHp * 0.6);
-    challenger.hp = Math.min(challenger.maxHp, challenger.hp + 30);
+    if (champion.hp <= 0) {
+      champion.losses++;
+      challenger.wins++;
+      gameState.rankings[league.a] = chalName;
+      gameState.rankings[league.b] = champName;
+      champion.hp = Math.round(champion.maxHp * 0.6);
+      challenger.hp = Math.min(challenger.maxHp, challenger.hp + 30);
+      result.swapped = true;
+      result.winner = chalName;
+      result.loser = champName;
+    }
 
-    result.swapped = true;
-    result.winner = challengerName;
-    result.loser = championName;
+    results.push(result);
+  }
+
+  if (results.length === 0) return;
+
+  // Gold swap toast only
+  const goldResult = results[0];
+  if (goldResult && goldResult.swapped) {
     io.emit("battle_swap", {
-      winner: challengerName,
-      loser: championName,
-      wEmoji: challenger.emoji,
-      lEmoji: champion.emoji,
-      wLevel: challenger.level,
-      lLevel: champion.level,
+      winner: goldResult.winner,
+      loser: goldResult.loser,
+      wEmoji: goldResult.chEmoji,
+      lEmoji: goldResult.cEmoji,
+      wLevel: goldResult.chLevel,
+      lLevel: goldResult.cLevel,
     });
   }
 
-  gameState.battleLog = result;
-  io.emit("battle_tick", result);
+  gameState.battleLog = goldResult;
+  io.emit("battle_tick", goldResult);
+  io.emit("league_battles", results);
   io.emit("state", sanitizeState());
 }
 
@@ -168,7 +194,9 @@ function sanitizeState() {
     arenaXpNext: gameState.arenaXpNext,
     fighters: fightersClean,
     rankings: gameState.rankings,
+    rankingsLeague: gameState.rankings.map((_, i) => getLeagueByIndex(i).label),
     battleLog: gameState.battleLog,
+    championComment: gameState.championComment,
   };
 }
 
@@ -191,11 +219,12 @@ function connectTikTok() {
   if (TIKTOK_USER === "TU_USUARIO_AQUI") { startDemoMode(); return; }
 
   const connection = new WebcastPushConnection(TIKTOK_USER, {});
-  connection.connect()
+  connection.connect()  
     .then(() => console.log(`[TikTok] Conectado a ${TIKTOK_USER}`))
     .catch(() => { startDemoMode(); });
 
   connection.on("like", (data) => {
+    //console.log("[TikTok RAW - like]", JSON.stringify(data, null, 2));
     const n = data.count || 1;
     gameState.likes = parseInt(data.total) || gameState.likes + n;
     const user = data.user?.nickname || "alguien";
@@ -203,13 +232,14 @@ function connectTikTok() {
     ensureFighter(user);
     const f = gameState.fighters[user];
     f.maxHp = baseHp(f.level, f.donations) + Math.floor(gameState.likes / 10);
-    f.hp = Math.min(f.hp + n * 2, f.maxHp);
+    f.hp = Math.min(f.hp + 2, f.maxHp);
     addFighterXp(user, 5 * n);
     io.emit("event", { type: "like", user, count: n });
     io.emit("state", sanitizeState());
   });
 
   connection.on("gift", (data) => {
+    //console.log("[TikTok RAW - gift]", JSON.stringify(data, null, 2));
     const diamonds = (data.diamondCount || 1) * (data.repeatCount || 1);
     gameState.coins += diamonds;
     const user = data.user.nickname || "alguien";
@@ -225,6 +255,7 @@ function connectTikTok() {
   });
 
   connection.on("follow", (data) => {
+    //console.log("[TikTok RAW - follow]", JSON.stringify(data, null, 2));
     const user = data.nickname || "alguien";
     ensureFighter(user);
     addFighterXp(user, 10);
@@ -233,6 +264,7 @@ function connectTikTok() {
   });
 
   connection.on("share", (data) => {
+    //console.log("[TikTok RAW - share]", JSON.stringify(data, null, 2));
     const user = data.nickname || "alguien";
     ensureFighter(user);
     addFighterXp(user, 8);
@@ -241,14 +273,19 @@ function connectTikTok() {
   });
 
   connection.on("chat", (data) => {
+    //console.log("[TikTok RAW - chat]", JSON.stringify(data, null, 2));
     const user = data.user.nickname || "alguien";
     ensureFighter(user);
     addFighterXp(user, 2);
+    if (gameState.rankings[0] === user) {
+      gameState.championComment = data.content || "";
+    }
     io.emit("event", { type: "comment", user, comment: data.content || "" });
     io.emit("state", sanitizeState());
   });
 
   connection.on("roomUser", (data) => {
+    //console.log("[TikTok RAW - roomUser]", JSON.stringify(data, null, 2));
     if (data.total) {
       gameState.viewers = data.total;
       io.emit("state", sanitizeState());
@@ -283,7 +320,7 @@ function startDemoMode() {
       ensureFighter(user);
       const f = gameState.fighters[user];
       f.maxHp = baseHp(f.level, f.donations);
-      f.hp = Math.min(f.hp + 6, f.maxHp);
+      f.hp = Math.min(f.hp + 2, f.maxHp);
       addFighterXp(user, 10);
       io.emit("event", { type: "like", user, count: 3 });
     } else if (r < 0.65) {
