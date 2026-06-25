@@ -1,11 +1,14 @@
 @echo off
-title TikTok Game Overlay - SurLab Studio
+title TikTok Arena RPG - SurLab Studio
 color 0A
 echo.
 echo  =============================================
-echo   TikTok Game Overlay  -  SurLab Studio
+echo    TikTok Arena RPG  -  SurLab Studio
 echo  =============================================
 echo.
+
+REM Usar Node.js v24 (requerido por tiktok-live-connector)
+where fnm >nul 2>&1 && fnm use 24 >nul 2>&1
 
 REM Verificar Node.js
 node --version >nul 2>&1
