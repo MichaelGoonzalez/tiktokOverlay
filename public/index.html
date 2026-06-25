@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>TikTok Game Overlay - Setup</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: #050805; color: #c0ffc0; min-height: 100vh;
+    display: flex; align-items: center; justify-content: center; padding: 2rem;
+  }
+  .card {
+    background: #0d1a0d; border: 2px solid #39ff14; border-radius: 4px;
+    padding: 2rem; max-width: 520px; width: 100%;
+  }
+  h1 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 11px; color: #39ff14; margin-bottom: 1.5rem; line-height: 1.8;
+    border-bottom: 1px solid #1a3d00; padding-bottom: 1rem;
+  }
+  h2 { font-size: 13px; color: #39ff14; margin: 1.5rem 0 .6rem; }
+  p, li { font-size: 13px; color: #80c080; line-height: 1.7; }
+  li { margin-left: 1.2rem; margin-bottom: .3rem; }
+  .step {
+    background: #0a100a; border: 1px solid #1a3d00; border-radius: 3px;
+    padding: .8rem 1rem; margin-bottom: .7rem;
+  }
+  .step-num {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px; color: #39ff14; display: block; margin-bottom: .4rem;
+  }
+  code {
+    font-family: monospace; background: #050805; color: #39ff14;
+    border: 1px solid #1a3d00; padding: 2px 6px; border-radius: 2px; font-size: 12px;
+  }
+  .url-box {
+    background: #050805; border: 2px solid #39ff14; border-radius: 3px;
+    padding: .8rem 1rem; margin: 1rem 0; font-family: monospace;
+    font-size: 14px; color: #39ff14; text-align: center; letter-spacing: 1px;
+  }
+  .badge { color: #fbbf24; }
+  .note { font-size: 11px; color: #4d8f4d; margin-top: .5rem; }
+  a { color: #60a5fa; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>⚔ TIKTOK GAME OVERLAY<br>SurLab Studio</h1>
+
+  <h2>Paso 1 — Configura tu usuario</h2>
+  <div class="step">
+    <span class="step-num">OPCIÓN A — Variable de entorno</span>
+    <p>Detén el server y vuelve a correrlo así:</p><br>
+    <code>TIKTOK_USER=@tuusuario node server.js</code>
+  </div>
+  <div class="step">
+    <span class="step-num">OPCIÓN B — Editar server.js</span>
+    <p>Abre <code>server.js</code> y en la línea de config cambia:</p><br>
+    <code>const TIKTOK_USER = '@tuusuario';</code>
+  </div>
+
+  <h2>Paso 2 — Agrega el overlay a Live Studio</h2>
+  <p>Copia esta URL como <strong>Link Source</strong> (fuente de navegador):</p>
+  <div class="url-box">http://localhost:3000/overlay.html</div>
+  <p class="note">En TikTok Live Studio: + Agregar fuente → Link → pega la URL</p>
+  <p class="note">En OBS: + → Browser Source → pega la URL → ancho 480, alto 220</p>
+
+  <h2>Cómo funciona el juego</h2>
+  <ul>
+    <li>❤ <span class="badge">Likes/corazones</span> → daño al boss + combo</li>
+    <li>💬 <span class="badge">Comentarios</span> → 3x daño + XP</li>
+    <li>🪙 <span class="badge">Gifts/diamantes</span> → daño masivo (2x diamantes)</li>
+    <li>⭐ <span class="badge">Follows</span> → 5 de daño</li>
+    <li>🔗 <span class="badge">Shares</span> → 8 de daño</li>
+    <li>🔥 <span class="badge">Combo</span> → sube con actividad rápida, expira en 3s</li>
+  </ul>
+
+  <p class="note" style="margin-top:1rem">
+    ⚠ Modo DEMO activo si no hay usuario configurado o si no estás en vivo.
+    El demo simula eventos automáticamente para que veas el overlay en acción.
+  </p>
+</div>
+</body>
+</html>

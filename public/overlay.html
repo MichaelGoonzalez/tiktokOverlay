@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Overlay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: transparent;
+    font-family: 'Press Start 2P', monospace;
+    width: 480px;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ── Contenedor principal ── */
+  #overlay {
+    width: 480px;
+    background: rgba(5, 8, 5, 0.88);
+    border: 2px solid #39ff14;
+    border-radius: 3px;
+    padding: 10px 12px 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Scanlines atmosféricos */
+  #overlay::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 3px,
+      rgba(57,255,20,0.025) 3px, rgba(57,255,20,0.025) 4px
+    );
+    pointer-events: none; z-index: 0;
+  }
+
+  .layer { position: relative; z-index: 1; }
+
+  /* ── Top bar ── */
+  #topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #1a3d00;
+    padding-bottom: 6px;
+  }
+  #streamTitle { font-size: 7px; color: #39ff14; letter-spacing: 1px; }
+  #viewerBadge {
+    font-size: 6px; color: #60e060;
+    background: #0d1a0d; border: 1px solid #1a3d00;
+    padding: 3px 7px; border-radius: 2px;
+  }
+  #levelBadge {
+    font-size: 7px; background: #39ff14; color: #050805;
+    padding: 3px 8px; border-radius: 2px;
+  }
+
+  /* ── Boss ── */
+  #bossSection { margin-bottom: 8px; }
+  #bossLabel {
+    font-size: 6px; color: #ff4444; margin-bottom: 5px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  #bossLabel span { color: #ff8888; }
+  #bossBar {
+    width: 100%; height: 16px;
+    background: #1a0000; border: 1px solid #ff3333;
+    border-radius: 2px; position: relative; overflow: hidden;
+  }
+  #bossHpFill {
+    height: 100%; background: #cc0000;
+    transition: width 0.5s ease;
+    position: relative;
+  }
+  #bossHpFill::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      90deg, transparent, transparent 10px,
+      rgba(255,100,100,0.25) 10px, rgba(255,100,100,0.25) 11px
+    );
+  }
+  #bossHpText {
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    font-size: 6px; color: #fff; z-index: 1;
+  }
+
+  /* ── Stats row ── */
+  #statsRow {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 5px; margin-bottom: 8px;
+  }
+  .statBox {
+    background: #0d1a0d; border: 1px solid #1a3d00;
+    border-radius: 2px; padding: 5px 4px; text-align: center;
+  }
+  .statLabel { font-size: 5px; color: #4d8f4d; margin-bottom: 3px; }
+  .statVal   { font-size: 10px; color: #39ff14; }
+  #comboBox  { border-color: #fbbf24; }
+  #comboBox .statLabel { color: #a87c00; }
+  #comboBox .statVal   { color: #fbbf24; }
+
+  /* ── XP bar ── */
+  #xpRow { margin-bottom: 8px; }
+  #xpLabel {
+    font-size: 5px; color: #4d8f4d;
+    display: flex; justify-content: space-between; margin-bottom: 3px;
+  }
+  #xpBar {
+    width: 100%; height: 5px;
+    background: #0d1a0d; border: 1px solid #1a3d00;
+    border-radius: 2px; overflow: hidden;
+  }
+  #xpFill {
+    height: 100%; background: #a855f7;
+    transition: width 0.5s ease;
+    box-shadow: 0 0 4px #a855f7;
+  }
+
+  /* ── Feed de eventos ── */
+  #feed {
+    height: 60px; overflow: hidden;
+    border: 1px solid #1a3d00; background: rgba(10,20,10,0.6);
+    border-radius: 2px; padding: 4px 7px;
+    display: flex; flex-direction: column; justify-content: flex-start;
+  }
+  .feedItem {
+    font-size: 6px; line-height: 1.9; color: #4d8f4d;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    animation: fadeIn .25s ease;
+  }
+  .feedItem.like    { color: #ff6b9d; }
+  .feedItem.comment { color: #60a5fa; }
+  .feedItem.gift    { color: #fbbf24; }
+  .feedItem.follow  { color: #a855f7; }
+  .feedItem.share   { color: #34d399; }
+
+  /* ── Popup de daño flotante ── */
+  .dmgPop {
+    position: fixed;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 11px; font-weight: bold;
+    pointer-events: none;
+    animation: dmgFloat 1.2s ease forwards;
+    z-index: 999;
+    text-shadow: 0 0 6px currentColor;
+  }
+  @keyframes dmgFloat {
+    0%   { opacity: 1; transform: translateY(0)   scale(1);   }
+    60%  {             transform: translateY(-30px) scale(1.3); }
+    100% { opacity: 0; transform: translateY(-55px) scale(1);  }
+  }
+
+  /* ── Combo popup ── */
+  #comboPop {
+    position: fixed; top: 10px; right: 10px;
+    font-size: 9px; color: #fbbf24;
+    text-shadow: 0 0 8px #fbbf24;
+    display: none;
+    animation: comboBounce .4s ease;
+    z-index: 50;
+  }
+  @keyframes comboBounce {
+    0%   { transform: scale(0.5); opacity: 0; }
+    60%  { transform: scale(1.25); }
+    100% { transform: scale(1);   opacity: 1; }
+  }
+
+  /* ── Boss dead / Level up flash ── */
+  #flash {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; text-align: center; line-height: 2;
+    z-index: 100; display: none;
+  }
+  #flash.show { display: flex; animation: flashAnim 2.5s ease forwards; }
+  #flash.boss_dead { color: #ff3333; text-shadow: 0 0 20px #ff3333; }
+  #flash.level_up  { color: #39ff14; text-shadow: 0 0 20px #39ff14; }
+  @keyframes flashAnim {
+    0%   { opacity: 0; transform: scale(0.7); }
+    15%  { opacity: 1; transform: scale(1.1); }
+    80%  { opacity: 1; }
+    100% { opacity: 0; transform: scale(1);   }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-4px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+</style>
+</head>
+<body>
+<div id="overlay">
+  <div class="layer">
+
+    <!-- Top -->
+    <div id="topbar">
+      <span id="streamTitle">⚔ MICHAEL LIVE ⚔</span>
+      <span id="viewerBadge">👁 0 viewers</span>
+      <span id="levelBadge">LVL 1</span>
+    </div>
+
+    <!-- Boss -->
+    <div id="bossSection">
+      <div id="bossLabel">
+        <span>◆ BOSS: <span id="bossName">1000 SEGUIDORES</span> ◆</span>
+        <span id="bossHpNum">1000/1000</span>
+      </div>
+      <div id="bossBar">
+        <div id="bossHpFill" style="width:100%"></div>
+        <div id="bossHpText">1000 HP</div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div id="statsRow">
+      <div class="statBox">
+        <div class="statLabel">❤ LIKES</div>
+        <div class="statVal" id="sLikes">0</div>
+      </div>
+      <div class="statBox">
+        <div class="statLabel">💬 CHATS</div>
+        <div class="statVal" id="sComments">0</div>
+      </div>
+      <div class="statBox">
+        <div class="statLabel">🪙 COINS</div>
+        <div class="statVal" id="sCoins">0</div>
+      </div>
+      <div class="statBox" id="comboBox">
+        <div class="statLabel">🔥 COMBO</div>
+        <div class="statVal" id="sCombo">x1</div>
+      </div>
+    </div>
+
+    <!-- XP -->
+    <div id="xpRow">
+      <div id="xpLabel">
+        <span id="xpLabelLeft">XP</span>
+        <span id="xpLabelRight">0 / 500</span>
+      </div>
+      <div id="xpBar"><div id="xpFill" style="width:0%"></div></div>
+    </div>
+
+    <!-- Feed -->
+    <div id="feed"></div>
+
+  </div>
+</div>
+
+<!-- Floating elements (outside overlay box) -->
+<div id="comboPop"></div>
+<div id="flash"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io();
+
+// ── Referencias ────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+
+// ── Render estado ──────────────────────────────────────────────────
+socket.on('state', (s) => {
+  $('levelBadge').textContent   = 'LVL ' + s.playerLevel;
+  $('viewerBadge').textContent  = '👁 ' + s.viewers + ' viewers';
+  $('bossName').textContent     = s.bossName;
+  $('bossHpNum').textContent    = Math.max(0,s.bossHp) + '/' + s.bossMaxHp;
+  $('bossHpText').textContent   = Math.max(0,s.bossHp) + ' HP';
+  const pct = Math.max(0, (s.bossHp / s.bossMaxHp) * 100);
+  $('bossHpFill').style.width   = pct + '%';
+  $('sLikes').textContent       = s.likes;
+  $('sComments').textContent    = s.comments;
+  $('sCoins').textContent       = s.coins;
+  $('sCombo').textContent       = 'x' + s.combo;
+  const xpPct = Math.min(100, (s.playerXp / s.xpToNext) * 100);
+  $('xpFill').style.width       = xpPct + '%';
+  $('xpLabelLeft').textContent  = 'LVL ' + s.playerLevel + ' XP';
+  $('xpLabelRight').textContent = s.playerXp + ' / ' + s.xpToNext;
+});
+
+// ── Feed de eventos ─────────────────────────────────────────────────
+const feed = $('feed');
+function addFeed(text, type) {
+  const el = document.createElement('div');
+  el.className = 'feedItem ' + type;
+  el.textContent = text;
+  feed.insertBefore(el, feed.firstChild);
+  while (feed.children.length > 5) feed.removeChild(feed.lastChild);
+}
+
+// ── Daño flotante ──────────────────────────────────────────────────
+function spawnDmg(dmg, color) {
+  const el = document.createElement('div');
+  el.className = 'dmgPop';
+  el.textContent = '-' + dmg;
+  el.style.color = color;
+  el.style.left  = (20 + Math.random() * 300) + 'px';
+  el.style.top   = (80 + Math.random() * 60)  + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1200);
+}
+
+// ── Combo popup ────────────────────────────────────────────────────
+let comboHideTimer;
+function showCombo(n) {
+  if (n <= 1) return;
+  const el = $('comboPop');
+  el.textContent = '🔥 COMBO x' + n + '!';
+  el.style.display = 'block';
+  el.style.animation = 'none';
+  void el.offsetWidth;
+  el.style.animation = '';
+  clearTimeout(comboHideTimer);
+  comboHideTimer = setTimeout(() => { el.style.display = 'none'; }, 1200);
+}
+
+// ── Flash pantalla ─────────────────────────────────────────────────
+function showFlash(msg, type) {
+  const el = $('flash');
+  el.textContent = msg;
+  el.className = 'show ' + type;
+  setTimeout(() => { el.className = ''; }, 2600);
+}
+
+// ── Eventos del juego ──────────────────────────────────────────────
+socket.on('event', (ev) => {
+  showCombo(ev.combo || 1);
+  switch (ev.type) {
+    case 'like':
+      addFeed('❤ ' + ev.user + ' envió ' + ev.count + ' corazones  (-' + ev.damage + ')', 'like');
+      spawnDmg(ev.damage, '#ff6b9d');
+      break;
+    case 'comment':
+      addFeed('💬 ' + ev.user + ': "' + ev.comment + '"  (-' + ev.damage + ')', 'comment');
+      spawnDmg(ev.damage, '#60a5fa');
+      break;
+    case 'gift':
+      addFeed('🪙 ' + ev.user + ' mandó ' + ev.gift + ' x' + ev.diamonds + '  (-' + ev.damage + ')', 'gift');
+      spawnDmg(ev.damage, '#fbbf24');
+      break;
+    case 'follow':
+      addFeed('⭐ ' + ev.user + ' te siguió!', 'follow');
+      spawnDmg(5, '#a855f7');
+      break;
+    case 'share':
+      addFeed('🔗 ' + ev.user + ' compartió el live!', 'share');
+      spawnDmg(8, '#34d399');
+      break;
+  }
+});
+
+socket.on('boss_dead', (d) => {
+  showFlash('★ BOSS DERROTADO ★\n' + d.name, 'boss_dead');
+});
+
+socket.on('new_boss', (d) => {
+  addFeed('◆ NUEVO BOSS: ' + d.name, 'gift');
+});
+
+socket.on('level_up', (d) => {
+  showFlash('⬆ LEVEL UP!\nLVL ' + d.level, 'level_up');
+});
+</script>
+</body>
+</html>
