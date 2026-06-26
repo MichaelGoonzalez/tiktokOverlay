@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -15,7 +16,24 @@ const io = new Server(server, { cors: { origin: "*" } });
 
 app.use(express.static(path.join(__dirname, "public")));
 
-const EMOJIS = ["🧙", "🗡️", "🏹", "⚔️", "🛡️", "🧝", "🧛", "🧟", "🐉", "🦸", "🦹", "🤺", "🧞", "🧜", "🐺", "🦅"];
+const EMOJIS = [
+  "🧙",
+  "🗡️",
+  "🏹",
+  "⚔️",
+  "🛡️",
+  "🧝",
+  "🧛",
+  "🧟",
+  "🐉",
+  "🦸",
+  "🦹",
+  "🤺",
+  "🧞",
+  "🧜",
+  "🐺",
+  "🦅",
+];
 
 function getRandomEmoji() {
   return EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
@@ -29,8 +47,8 @@ function baseHp(level, donations) {
   return 100 + (level - 1) * 15 + (donations || 0);
 }
 
-function calcDamage(attackerLevel) {
-  return Math.max(1, attackerLevel * 4 + Math.floor(Math.random() * 12));
+function getAvatarUrl(data) {
+  return data?.user?.avatarThumb?.urlList?.[0] || data?.avatarThumb?.urlList?.[0] || null;
 }
 
 const gameState = {
@@ -59,6 +77,7 @@ function ensureFighter(username) {
       wins: 0,
       losses: 0,
       emoji: getRandomEmoji(),
+      avatarUrl: null,
     };
   }
   return gameState.fighters[username];
@@ -91,9 +110,9 @@ function updateRankings() {
 }
 
 const LEAGUES = [
-  { name: "gold",    label: "🥇 GOLD",     a: 0, b: 1 },
+  { name: "gold", label: "🥇 GOLD", a: 0, b: 1 },
   { name: "platinum", label: "🥈 PLATINUM", a: 2, b: 3 },
-  { name: "bronze",  label: "🥉 BRONCE",   a: 4, b: 5 },
+  { name: "bronze", label: "🥉 BRONCE", a: 4, b: 5 },
 ];
 
 function getLeagueByIndex(i) {
@@ -102,70 +121,95 @@ function getLeagueByIndex(i) {
   return LEAGUES[2];
 }
 
-function runBattleTick() {
+function processInteraction(type, amount, label, username) {
   if (gameState.rankings.length < 2) return;
-  const results = [];
+
+  let targetLeague = null;
+  let isChallenger = false;
 
   for (const league of LEAGUES) {
     if (gameState.rankings.length <= league.b) continue;
-    const champName = gameState.rankings[league.a];
-    const chalName = gameState.rankings[league.b];
-    const champion = gameState.fighters[champName];
-    const challenger = gameState.fighters[chalName];
-    if (!champion || !challenger) continue;
-
-    const damage = calcDamage(challenger.level);
-    champion.hp = Math.max(0, champion.hp - damage);
-
-    const result = {
-      league: league.label,
-      champion: champName,
-      challenger: chalName,
-      cEmoji: champion.emoji,
-      chEmoji: challenger.emoji,
-      cLevel: champion.level,
-      chLevel: challenger.level,
-      cHp: champion.hp,
-      cMaxHp: champion.maxHp,
-      chHp: challenger.hp,
-      chMaxHp: challenger.maxHp,
-      damage,
-      attacker: chalName,
-    };
-
-    if (champion.hp <= 0) {
-      champion.losses++;
-      challenger.wins++;
-      gameState.rankings[league.a] = chalName;
-      gameState.rankings[league.b] = champName;
-      champion.hp = Math.round(champion.maxHp * 0.6);
-      challenger.hp = Math.min(challenger.maxHp, challenger.hp + 30);
-      result.swapped = true;
-      result.winner = chalName;
-      result.loser = champName;
+    if (gameState.rankings[league.a] === username) {
+      targetLeague = league;
+      isChallenger = false;
+      break;
     }
-
-    results.push(result);
+    if (gameState.rankings[league.b] === username) {
+      targetLeague = league;
+      isChallenger = true;
+      break;
+    }
   }
 
-  if (results.length === 0) return;
+  if (!targetLeague) return;
 
-  // Gold swap toast only
-  const goldResult = results[0];
-  if (goldResult && goldResult.swapped) {
+  const champName = gameState.rankings[targetLeague.a];
+  const chalName = gameState.rankings[targetLeague.b];
+  const champion = gameState.fighters[champName];
+  const challenger = gameState.fighters[chalName];
+  if (!champion || !challenger) return;
+
+  let heal = 0, damage = 0;
+
+  if (type === 'like') {
+    heal = 1;
+    damage = 1;
+  } else if (type === 'gift') {
+    heal = amount * 1;
+    damage = amount * 5;
+  } else if (type === 'share') {
+    heal = 1;
+    damage = 0;
+  }
+
+  if (!isChallenger) {
+    champion.hp = Math.min(champion.hp + heal, champion.maxHp);
+  } else {
+    champion.hp = Math.max(0, champion.hp - damage);
+  }
+
+  const result = {
+    league: targetLeague.label,
+    champion: champName,
+    challenger: chalName,
+    cEmoji: champion.emoji,
+    chEmoji: challenger.emoji,
+    cAvatar: champion.avatarUrl,
+    chAvatar: challenger.avatarUrl,
+    cLevel: champion.level,
+    chLevel: challenger.level,
+    cHp: champion.hp,
+    cMaxHp: champion.maxHp,
+    chHp: challenger.hp,
+    chMaxHp: challenger.maxHp,
+    damage: isChallenger ? damage : 0,
+    heal: !isChallenger ? heal : 0,
+    attacker: isChallenger ? chalName : null,
+    interactionLabel: label || type,
+  };
+
+  if (champion.hp <= 0) {
+    champion.losses++;
+    challenger.wins++;
+    gameState.rankings[targetLeague.a] = chalName;
+    gameState.rankings[targetLeague.b] = champName;
+    champion.hp = Math.round(champion.maxHp * 0.6);
+    challenger.hp = Math.min(challenger.maxHp, challenger.hp + 30);
+    result.swapped = true;
+    result.winner = chalName;
+    result.loser = champName;
     io.emit("battle_swap", {
-      winner: goldResult.winner,
-      loser: goldResult.loser,
-      wEmoji: goldResult.chEmoji,
-      lEmoji: goldResult.cEmoji,
-      wLevel: goldResult.chLevel,
-      lLevel: goldResult.cLevel,
+      winner: chalName,
+      loser: champName,
+      wEmoji: challenger.emoji,
+      lEmoji: champion.emoji,
+      wLevel: challenger.level,
+      lLevel: champion.level,
     });
   }
 
-  gameState.battleLog = goldResult;
-  io.emit("battle_tick", goldResult);
-  io.emit("league_battles", results);
+  gameState.battleLog = result;
+  io.emit("league_battles", [result]);
   io.emit("state", sanitizeState());
 }
 
@@ -182,6 +226,7 @@ function sanitizeState() {
       losses: f.losses,
       emoji: f.emoji,
       donations: f.donations,
+      avatarUrl: f.avatarUrl,
     };
   }
   return {
@@ -215,13 +260,21 @@ io.on("connection", (socket) => {
 });
 
 function connectTikTok() {
-  if (!WebcastPushConnection) { startDemoMode(); return; }
-  if (TIKTOK_USER === "TU_USUARIO_AQUI") { startDemoMode(); return; }
-
-  const connection = new WebcastPushConnection(TIKTOK_USER, {});
-  connection.connect()  
+  if (!WebcastPushConnection) {
+    startDemoMode();
+    return;
+  }
+  if (TIKTOK_USER === "TU_USUARIO_AQUI") {
+    startDemoMode();
+    return;
+  }
+  const connection = new WebcastPushConnection(TIKTOK_USER, { signApiKey: process.env.API || '' });
+  connection
+    .connect()
     .then(() => console.log(`[TikTok] Conectado a ${TIKTOK_USER}`))
-    .catch(() => { startDemoMode(); });
+    .catch(() => {
+      startDemoMode();
+    });
 
   connection.on("like", (data) => {
     //console.log("[TikTok RAW - like]", JSON.stringify(data, null, 2));
@@ -231,11 +284,12 @@ function connectTikTok() {
     addArenaXp(n);
     ensureFighter(user);
     const f = gameState.fighters[user];
+    f.avatarUrl = getAvatarUrl(data) || f.avatarUrl;
     f.maxHp = baseHp(f.level, f.donations) + Math.floor(gameState.likes / 10);
     f.hp = Math.min(f.hp + 2, f.maxHp);
     addFighterXp(user, 5 * n);
     io.emit("event", { type: "like", user, count: n });
-    io.emit("state", sanitizeState());
+    processInteraction('like', n, '❤️', user);
   });
 
   connection.on("gift", (data) => {
@@ -246,18 +300,22 @@ function connectTikTok() {
     addArenaXp(diamonds);
     ensureFighter(user);
     const f = gameState.fighters[user];
+    f.avatarUrl = getAvatarUrl(data) || f.avatarUrl;
     f.donations = (f.donations || 0) + diamonds;
     f.maxHp = baseHp(f.level, f.donations);
     f.hp = Math.min(f.hp + diamonds * 3, f.maxHp);
     addFighterXp(user, 20 + diamonds * 2);
-    io.emit("event", { type: "gift", user, gift: data.giftName || "regalo", diamonds });
-    io.emit("state", sanitizeState());
+    const giftName = data.giftName || "regalo";
+    io.emit("event", { type: "gift", user, gift: giftName, diamonds });
+    processInteraction('gift', diamonds, '🎁 ' + giftName, user);
   });
 
   connection.on("follow", (data) => {
     //console.log("[TikTok RAW - follow]", JSON.stringify(data, null, 2));
     const user = data.nickname || "alguien";
     ensureFighter(user);
+    const f = gameState.fighters[user];
+    f.avatarUrl = getAvatarUrl(data) || f.avatarUrl;
     addFighterXp(user, 10);
     io.emit("event", { type: "follow", user });
     io.emit("state", sanitizeState());
@@ -267,15 +325,19 @@ function connectTikTok() {
     //console.log("[TikTok RAW - share]", JSON.stringify(data, null, 2));
     const user = data.nickname || "alguien";
     ensureFighter(user);
+    const f = gameState.fighters[user];
+    f.avatarUrl = getAvatarUrl(data) || f.avatarUrl;
     addFighterXp(user, 8);
     io.emit("event", { type: "share", user });
-    io.emit("state", sanitizeState());
+    processInteraction('share', 1, '📢', user);
   });
 
   connection.on("chat", (data) => {
     //console.log("[TikTok RAW - chat]", JSON.stringify(data, null, 2));
     const user = data.user.nickname || "alguien";
     ensureFighter(user);
+    const f = gameState.fighters[user];
+    f.avatarUrl = getAvatarUrl(data) || f.avatarUrl;
     addFighterXp(user, 2);
     if (gameState.rankings[0] === user) {
       gameState.championComment = data.content || "";
@@ -288,8 +350,18 @@ function connectTikTok() {
     //console.log("[TikTok RAW - roomUser]", JSON.stringify(data, null, 2));
     if (data.total) {
       gameState.viewers = data.total;
-      io.emit("state", sanitizeState());
     }
+    if (data.ranks && Array.isArray(data.ranks)) {
+      for (const entry of data.ranks) {
+        const nickname = entry.user?.nickname;
+        const avatarUrl = entry.user?.avatarThumb?.urlList?.[0];
+        if (nickname && avatarUrl) {
+          ensureFighter(nickname);
+          gameState.fighters[nickname].avatarUrl = avatarUrl;
+        }
+      }
+    }
+    io.emit("state", sanitizeState());
   });
 
   connection.on("disconnected", () => {
@@ -298,7 +370,16 @@ function connectTikTok() {
 }
 
 function startDemoMode() {
-  const demoUsers = ["fan_123", "gamer_pro", "corazon99", "pixel_girl", "dark_xX", "mikey_fan", "luna_star", "boss_king"];
+  const demoUsers = [
+    "fan_123",
+    "gamer_pro",
+    "corazon99",
+    "pixel_girl",
+    "dark_xX",
+    "mikey_fan",
+    "luna_star",
+    "boss_king",
+  ];
   for (const u of demoUsers) {
     ensureFighter(u);
     const f = gameState.fighters[u];
@@ -323,6 +404,7 @@ function startDemoMode() {
       f.hp = Math.min(f.hp + 2, f.maxHp);
       addFighterXp(user, 10);
       io.emit("event", { type: "like", user, count: 3 });
+      processInteraction('like', 3, '❤️', user);
     } else if (r < 0.65) {
       const diamonds = Math.floor(Math.random() * 20) + 3;
       gameState.coins += diamonds;
@@ -334,6 +416,7 @@ function startDemoMode() {
       f.hp = Math.min(f.hp + diamonds * 3, f.maxHp);
       addFighterXp(user, 20 + diamonds * 2);
       io.emit("event", { type: "gift", user, gift: "Rosa", diamonds });
+      processInteraction('gift', diamonds, '🎁 Rosa', user);
     } else {
       ensureFighter(user);
       addFighterXp(user, 8);
@@ -361,7 +444,6 @@ async function start() {
     console.log(`  Overlay:   http://localhost:${PORT}/overlay.html`);
     console.log("");
     connectTikTok();
-    setInterval(runBattleTick, 3000);
   });
 }
 

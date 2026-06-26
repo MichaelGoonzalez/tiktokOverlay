@@ -9,7 +9,7 @@
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html {
-  font-size: clamp(7px, 1.2vmin + 2px, 18px);
+  font-size: clamp(10px, 2vmin + 4px, 22px);
 }
 body {
   width: 100vw;
@@ -49,12 +49,12 @@ body {
 #podioSection {
   border-radius: 0.3em;
   background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('images/fondoarenas.gif') center/cover no-repeat;
-  padding: 0.2em 0.3em;
+  padding: 0.3em 0.4em;
 }
 #arenasSection {
   border-radius: 0.3em;
   background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('images/fondopodio.gif') center/cover no-repeat;
-  padding: 0.2em 0.3em;
+  padding: 0.3em 0.4em;
 }
 
 /* ─── Top bar ─── */
@@ -62,7 +62,7 @@ body {
   display: flex; justify-content: center; align-items: center;
   border-bottom: 0.1em solid #1a3d00; padding-bottom: 0.2em;
 }
-#viewerBadge { font-size: 0.9em; color: #60e060; background: #0d1a0d; border: 0.1em solid #1a3d00; padding: 0.15em 0.6em; border-radius: 0.15em; white-space: nowrap; }
+#viewerBadge { font-size: 1em; color: #60e060; background: #0d1a0d; border: 0.1em solid #1a3d00; padding: 0.2em 0.6em; border-radius: 0.15em; white-space: nowrap; }
 
 /* ─── Podium (Bars with fighters on top) ─── */
 #podium {
@@ -90,17 +90,17 @@ body {
   background-position: center;
 }
 .podCard.pgGold .podBar {
-  height: 2em;
+  height: 2.8em;
   background-image: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.25)), url('images/oropodio.png');
   border-color: rgba(251,191,36,0.3);
 }
 .podCard.pgPlatino .podBar {
-  height: 1.6em;
+  height: 2.2em;
   background-image: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.25)), url('images/platinopodio.png');
   border-color: rgba(192,192,192,0.2);
 }
 .podCard.pgBronce .podBar {
-  height: 1.2em;
+  height: 1.6em;
   background-image: linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.25)), url('images/broncepodio.png');
   border-color: rgba(205,127,50,0.2);
 }
@@ -128,19 +128,30 @@ body {
   margin-bottom: 0.15em;
   z-index: 1;
 }
-.podMedal { font-size: 1em; line-height: 1.2; }
-.podEmoji { font-size: 1.6em; line-height: 1.2; }
-.podName  { font-size: 0.5em; color: #ccc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
-.podLevel { font-size: 0.4em; color: #666; }
-.podCard.pgGold .podName { color: #fbbf24; text-shadow: 0 0 0.3em rgba(251,191,36,0.3); }
-.podCard.pgPlatino .podName { color: #c0c0c0; }
-.podCard.pgBronce .podName { color: #cd7f32; }
-.podHpBar { width: 85%; height: 0.25em; background: #1a0000; border: 0.07em solid #333; border-radius: 0.1em; overflow: hidden; }
-.podHpFill { height: 100%; background: linear-gradient(90deg, #22c55e, #39ff14); transition: width 0.4s ease; }
-.podHpFill.low { background: linear-gradient(90deg, #ff4400, #ff0000); }
-.podHpFill.medium { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
-.podHpText { font-size: 0.35em; color: #666; }
-.podWins  { font-size: 0.4em; color: #555; }
+.podMedal {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  font-size: 1.3em;
+  line-height: 1.2;
+  pointer-events: none;
+  text-shadow: 0 0 0.4em rgba(0,0,0,0.8), 0 0 1em rgba(0,0,0,0.5);
+}
+.pgGold .podMedal   { bottom: 0.75em; }
+.pgPlatino .podMedal{ bottom: 0.45em; }
+.pgBronce .podMedal { bottom: 0.15em; }
+.podEmoji { font-size: 2.4em; line-height: 1.2; display: inline-block; }
+.podAvatar {
+  border-radius: 50%;
+  object-fit: cover;
+  border: 0.15em solid rgba(255,215,0,0.4);
+}
+.pgGold .podAvatar    { width: 3.2em; height: 3.2em; }
+.pgPlatino .podAvatar { width: 2.6em; height: 2.6em; }
+.pgBronce .podAvatar  { width: 2em;   height: 2em;   }
+.podName  { font-size: 0.65em; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; background: rgba(0,0,0,0.7); padding: 0.06em 0.2em; border-radius: 0.1em; text-shadow: 0 0 0.2em rgba(0,0,0,0.5); }
+
 .podComment { font-size: 0.4em; color: #4d8f4d; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; font-style: italic; display: none; }
 .podComment.show { display: inline; }
 .podDmg {
@@ -154,7 +165,7 @@ body {
   100% { opacity: 0; transform: translateY(-0.5em) scale(0.8); }
 }
 
-/* ─── League Arenas (Horizontal) ─── */
+/* ─── League Arenas (Vertical) ─── */
 #arenaContainer {
   display: flex;
   flex-direction: row;
@@ -164,16 +175,16 @@ body {
 .leagueCard {
   flex: 0 1 auto;
   width: 30%;
-  max-width: 18em;
-  min-height: 18em;
+  max-width: 22em;
+  min-height: 22em;
   border-radius: 0.2em;
   border: 0.1em solid #1a3d00;
   background: rgba(0,0,0,0.25);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0.5em 0.3em;
-  gap: 0.15em;
+  padding: 0.6em 0.4em;
+  gap: 0.2em;
   position: relative;
   overflow: hidden;
 }
@@ -190,7 +201,7 @@ body {
 .leagueCard.empty .lcEmpty { display: flex; }
 
 .lcHeader {
-  font-size: 0.85em;
+  font-size: 1em;
   color: #4d8f4d;
   text-align: center;
   width: 100%;
@@ -202,10 +213,10 @@ body {
 .lcBody {
   flex: 1;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.15em;
+  gap: 0.3em;
   width: 100%;
   min-height: 0;
 }
@@ -213,16 +224,21 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.05em;
+  gap: 0.1em;
   min-width: 0;
   flex: 1;
+  justify-content: center;
+  width: 100%;
 }
-.lcChallenger { }
 .lcChampion { }
-.lcEmoji { font-size: 1.8em; line-height: 1.2; }
-.lcName { font-size: 0.55em; color: #aaa; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+.lcChallenger { }
+.lcEmoji { font-size: 1.6em; line-height: 1.2; display: inline-block; }
+.lcAvatar { width: 1.8em; height: 1.8em; border-radius: 50%; object-fit: cover; border: 0.08em solid rgba(255,255,255,0.2); display: inline-block; }
+.lcName { font-size: 0.6em; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; background: rgba(0,0,0,0.7); padding: 0.05em 0.15em; border-radius: 0.1em; }
+.lcLevel { font-size: 0.45em; color: #fbbf24; background: rgba(0,0,0,0.5); padding: 0.03em 0.12em; border-radius: 0.1em; }
+.lcHpText { font-size: 0.45em; color: #ff6666; background: rgba(0,0,0,0.5); padding: 0.02em 0.15em; border-radius: 0.1em; }
 .lcHpBar {
-  width: 85%; height: 0.3em;
+  width: 85%; height: 0.4em;
   background: #1a0000; border: 0.08em solid #333; border-radius: 0.1em; overflow: hidden;
 }
 .lcHpFill {
@@ -233,12 +249,23 @@ body {
 .lcHpFill.low { background: linear-gradient(90deg, #ff4400, #ff0000); }
 .lcHpFill.medium { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
 .lcVs {
-  font-size: 1.2em;
+  font-size: 1.6em;
   color: #ff4444;
   text-shadow: 0 0 0.3em rgba(255,0,0,0.3);
   flex-shrink: 0;
   animation: lcVsPulse 1s ease infinite;
   line-height: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  width: 100%;
+}
+.lcVs::before,
+.lcVs::after {
+  content: '';
+  flex: 1;
+  height: 0.08em;
+  background: linear-gradient(90deg, transparent, rgba(255,68,68,0.3), transparent);
 }
 @keyframes lcVsPulse {
   0%, 100% { opacity: 1; }
@@ -254,10 +281,27 @@ body {
   z-index: 3;
   animation: lcDmgFly 0.7s ease forwards;
 }
+.lcHeal {
+  position: absolute;
+  font-size: 0.9em;
+  font-weight: bold;
+  color: #39ff14;
+  text-shadow: 0 0 0.4em rgba(57,255,20,0.6), 0 0 0.8em rgba(57,255,20,0.3);
+  pointer-events: none;
+  z-index: 3;
+  animation: lcHealFly 1.5s ease forwards;
+  white-space: nowrap;
+}
 @keyframes lcDmgFly {
   0% { opacity: 1; transform: translateY(0) scale(0.5); }
   40% { opacity: 1; transform: translateY(-0.3em) scale(1.2); }
   100% { opacity: 0; transform: translateY(-0.6em) scale(0.8); }
+}
+@keyframes lcHealFly {
+  0% { opacity: 0; transform: translateY(0) scale(0.5); }
+  15% { opacity: 1; transform: translateY(-0.2em) scale(1.3); }
+  60% { opacity: 1; transform: translateY(-0.6em) scale(1); }
+  100% { opacity: 0; transform: translateY(-1.2em) scale(0.9); }
 }
 
 .lcEmpty {
@@ -295,13 +339,13 @@ body {
 .rankItem {
   display: flex;
   align-items: center;
-  gap: 0.2em;
-  padding: 0.15em 0.2em;
+  gap: 0.3em;
+  padding: 0.2em 0.3em;
   background: rgba(0,0,0,0.2);
   border: 0.1em solid transparent;
   border-radius: 0.15em;
   animation: rankEnter 0.3s ease;
-  min-height: 1.4em;
+  min-height: 1.8em;
 }
 .rankItem:nth-child(1) { border-color: rgba(251,191,36,0.3); background: rgba(251,191,36,0.04); }
 .rankItem:nth-child(2) { border-color: rgba(192,192,192,0.2); background: rgba(192,192,192,0.02); }
@@ -311,14 +355,15 @@ body {
   100% { opacity: 1; transform: translateX(0); }
 }
 .rankPos {
-  font-size: 0.9em; color: #555; width: 1.6em; text-align: center; flex-shrink: 0;
+  font-size: 1.1em; color: #555; width: 2em; text-align: center; flex-shrink: 0;
 }
 .rankPos.gold { color: #fbbf24; }
 .rankPos.silver { color: #c0c0c0; }
 .rankPos.bronze { color: #cd7f32; }
-.rankEmoji { font-size: 1.1em; line-height: 1; flex-shrink: 0; width: 1.2em; text-align: center; }
-.rankName { font-size: 0.9em; color: #ccc; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.rankScore { font-size: 0.7em; color: #39ff14; width: 4em; text-align: center; flex-shrink: 0; }
+.rankEmoji { font-size: 1.2em; line-height: 1; flex-shrink: 0; width: 1.3em; text-align: center; }
+.rankAvatar { width: 1.4em; height: 1.4em; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.rankName { font-size: 0.8em; color: #fff; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: rgba(0,0,0,0.7); padding: 0.04em 0.15em; border-radius: 0.1em; }
+.rankScore { font-size: 0.9em; color: #39ff14; width: 5em; text-align: center; flex-shrink: 0; }
 
 /* ─── Feed ─── */
 #feed {
@@ -375,42 +420,30 @@ body {
     <div id="podioSection">
       <div id="podium">
         <div class="podCard pgPlatino" id="podPlatino">
+          <div class="podMedal">🥈</div>
           <div class="podContent">
-            <div class="podMedal">🥈</div>
             <div class="podEmoji" id="ppEmoji">🗡️</div>
             <div class="podName" id="ppName">---</div>
-            <div class="podLevel" id="ppLevel">LVL ?</div>
-            <div class="podHpBar"><div class="podHpFill" id="ppHp" style="width:0%"></div></div>
-            <div class="podHpText" id="ppHpText">HP 0/0</div>
-            <div class="podWins" id="ppWins">🏆0</div>
             <div class="podComment" id="ppComment"></div>
           </div>
           <div class="podEmptyLabel">SIN LUCHADOR</div>
           <div class="podBar"></div>
         </div>
         <div class="podCard pgGold" id="podGold">
+          <div class="podMedal">🥇</div>
           <div class="podContent">
-            <div class="podMedal">🥇</div>
             <div class="podEmoji" id="pgEmoji">🧙</div>
             <div class="podName" id="pgName">---</div>
-            <div class="podLevel" id="pgLevel">LVL ?</div>
-            <div class="podHpBar"><div class="podHpFill" id="pgHp" style="width:0%"></div></div>
-            <div class="podHpText" id="pgHpText">HP 0/0</div>
-            <div class="podWins" id="pgWins">🏆0</div>
             <div class="podComment" id="pgComment"></div>
           </div>
           <div class="podEmptyLabel">SIN LUCHADOR</div>
           <div class="podBar"></div>
         </div>
         <div class="podCard pgBronce" id="podBronce">
+          <div class="podMedal">🥉</div>
           <div class="podContent">
-            <div class="podMedal">🥉</div>
             <div class="podEmoji" id="pbEmoji">🏹</div>
             <div class="podName" id="pbName">---</div>
-            <div class="podLevel" id="pbLevel">LVL ?</div>
-            <div class="podHpBar"><div class="podHpFill" id="pbHp" style="width:0%"></div></div>
-            <div class="podHpText" id="pbHpText">HP 0/0</div>
-            <div class="podWins" id="pbWins">🏆0</div>
             <div class="podComment" id="pbComment"></div>
           </div>
           <div class="podEmptyLabel">SIN LUCHADOR</div>
@@ -422,37 +455,45 @@ body {
     <!-- League Arenas -->
     <div id="arenasSection">
       <div id="arenaContainer">
-      <div class="leagueCard oro" id="arenaOro">
-        <div class="lcHeader">🥇 ORO</div>
+      <div class="leagueCard platino" id="arenaPlatino">
+        <div class="lcHeader">🥈 PLATINO</div>
         <div class="lcBody">
-          <div class="lcFighter lcChallenger">
-            <span class="lcEmoji" id="oroChalEmoji">🗡️</span>
-            <span class="lcName" id="oroChalName">---</span>
-            <div class="lcHpBar"><div class="lcHpFill" id="oroChalHp"></div></div>
+          <div class="lcFighter lcChampion">
+            <span class="lcEmoji" id="platChampEmoji">👑</span>
+            <span class="lcName" id="platChampName">---</span>
+            <span class="lcLevel" id="platChampLevel">LVL 1</span>
+            <div class="lcHpBar"><div class="lcHpFill" id="platChampHp"></div></div>
+            <span class="lcHpText" id="platChampHpText">HP 0/0</span>
           </div>
           <span class="lcVs">⚔</span>
-          <div class="lcFighter lcChampion">
-            <span class="lcEmoji" id="oroChampEmoji">👑</span>
-            <span class="lcName" id="oroChampName">---</span>
-            <div class="lcHpBar"><div class="lcHpFill" id="oroChampHp"></div></div>
+          <div class="lcFighter lcChallenger">
+            <span class="lcEmoji" id="platChalEmoji">🗡️</span>
+            <span class="lcName" id="platChalName">---</span>
+            <span class="lcLevel" id="platChalLevel">LVL 1</span>
+            <div class="lcHpBar"><div class="lcHpFill" id="platChalHp"></div></div>
+            <span class="lcHpText" id="platChalHpText">HP 0/0</span>
           </div>
         </div>
         <div class="lcEmpty">SIN LUCHADOR</div>
       </div>
 
-      <div class="leagueCard platino" id="arenaPlatino">
-        <div class="lcHeader">🥈 PLATINO</div>
+      <div class="leagueCard oro" id="arenaOro">
+        <div class="lcHeader">🥇 ORO</div>
         <div class="lcBody">
-          <div class="lcFighter lcChallenger">
-            <span class="lcEmoji" id="platChalEmoji">🗡️</span>
-            <span class="lcName" id="platChalName">---</span>
-            <div class="lcHpBar"><div class="lcHpFill" id="platChalHp"></div></div>
+          <div class="lcFighter lcChampion">
+            <span class="lcEmoji" id="oroChampEmoji">👑</span>
+            <span class="lcName" id="oroChampName">---</span>
+            <span class="lcLevel" id="oroChampLevel">LVL 1</span>
+            <div class="lcHpBar"><div class="lcHpFill" id="oroChampHp"></div></div>
+            <span class="lcHpText" id="oroChampHpText">HP 0/0</span>
           </div>
           <span class="lcVs">⚔</span>
-          <div class="lcFighter lcChampion">
-            <span class="lcEmoji" id="platChampEmoji">👑</span>
-            <span class="lcName" id="platChampName">---</span>
-            <div class="lcHpBar"><div class="lcHpFill" id="platChampHp"></div></div>
+          <div class="lcFighter lcChallenger">
+            <span class="lcEmoji" id="oroChalEmoji">🗡️</span>
+            <span class="lcName" id="oroChalName">---</span>
+            <span class="lcLevel" id="oroChalLevel">LVL 1</span>
+            <div class="lcHpBar"><div class="lcHpFill" id="oroChalHp"></div></div>
+            <span class="lcHpText" id="oroChalHpText">HP 0/0</span>
           </div>
         </div>
         <div class="lcEmpty">SIN LUCHADOR</div>
@@ -461,16 +502,20 @@ body {
       <div class="leagueCard bronce" id="arenaBronce">
         <div class="lcHeader">🥉 BRONCE</div>
         <div class="lcBody">
-          <div class="lcFighter lcChallenger">
-            <span class="lcEmoji" id="bronChalEmoji">🗡️</span>
-            <span class="lcName" id="bronChalName">---</span>
-            <div class="lcHpBar"><div class="lcHpFill" id="bronChalHp"></div></div>
-          </div>
-          <span class="lcVs">⚔</span>
           <div class="lcFighter lcChampion">
             <span class="lcEmoji" id="bronChampEmoji">👑</span>
             <span class="lcName" id="bronChampName">---</span>
+            <span class="lcLevel" id="bronChampLevel">LVL 1</span>
             <div class="lcHpBar"><div class="lcHpFill" id="bronChampHp"></div></div>
+            <span class="lcHpText" id="bronChampHpText">HP 0/0</span>
+          </div>
+          <span class="lcVs">⚔</span>
+          <div class="lcFighter lcChallenger">
+            <span class="lcEmoji" id="bronChalEmoji">🗡️</span>
+            <span class="lcName" id="bronChalName">---</span>
+            <span class="lcLevel" id="bronChalLevel">LVL 1</span>
+            <div class="lcHpBar"><div class="lcHpFill" id="bronChalHp"></div></div>
+            <span class="lcHpText" id="bronChalHpText">HP 0/0</span>
           </div>
         </div>
         <div class="lcEmpty">SIN LUCHADOR</div>
@@ -501,6 +546,14 @@ const socket = io();
 const $ = id => document.getElementById(id);
 const hpClass = pct => pct <= 0 ? 'dead' : pct < 25 ? 'low' : pct < 55 ? 'medium' : '';
 
+function setAvatar(el, emoji, avatarUrl, avatarClass) {
+  if (avatarUrl) {
+    el.innerHTML = '<img src="' + avatarUrl + '" class="' + avatarClass + '" alt="">';
+  } else {
+    el.textContent = emoji;
+  }
+}
+
 function showToast(msg, type) {
   const c = $('toastContainer');
   const el = document.createElement('div');
@@ -512,9 +565,9 @@ function showToast(msg, type) {
 
 // ─── League arena helpers ───
 const LEAGUE_IDS = {
-  oro:    { card: 'arenaOro',    chalEmoji: 'oroChalEmoji', chalName: 'oroChalName', chalHp: 'oroChalHp', champEmoji: 'oroChampEmoji', champName: 'oroChampName', champHp: 'oroChampHp' },
-  platinum: { card: 'arenaPlatino', chalEmoji: 'platChalEmoji',chalName: 'platChalName',chalHp: 'platChalHp',champEmoji: 'platChampEmoji',champName: 'platChampName',champHp: 'platChampHp' },
-  bronze: { card: 'arenaBronce', chalEmoji: 'bronChalEmoji',chalName: 'bronChalName',chalHp: 'bronChalHp',champEmoji: 'bronChampEmoji',champName: 'bronChampName',champHp: 'bronChampHp' },
+  oro:    { card: 'arenaOro',    chalEmoji: 'oroChalEmoji', chalName: 'oroChalName', chalHp: 'oroChalHp', chalLevel: 'oroChalLevel', chalHpText: 'oroChalHpText', champEmoji: 'oroChampEmoji', champName: 'oroChampName', champHp: 'oroChampHp', champLevel: 'oroChampLevel', champHpText: 'oroChampHpText' },
+  platinum: { card: 'arenaPlatino', chalEmoji: 'platChalEmoji',chalName: 'platChalName',chalHp: 'platChalHp',chalLevel: 'platChalLevel',chalHpText: 'platChalHpText',champEmoji: 'platChampEmoji',champName: 'platChampName',champHp: 'platChampHp',champLevel: 'platChampLevel',champHpText: 'platChampHpText' },
+  bronze: { card: 'arenaBronce', chalEmoji: 'bronChalEmoji',chalName: 'bronChalName',chalHp: 'bronChalHp',chalLevel: 'bronChalLevel',chalHpText: 'bronChalHpText',champEmoji: 'bronChampEmoji',champName: 'bronChampName',champHp: 'bronChampHp',champLevel: 'bronChampLevel',champHpText: 'bronChampHpText' },
 };
 
 const LEAGUE_MAP = {
@@ -543,20 +596,24 @@ function fillLeagueCard(cardId, result) {
   const keyMap = { 'arenaOro': 'oro', 'arenaPlatino': 'platinum', 'arenaBronce': 'bronze' };
   const ids = LEAGUE_IDS[keyMap[cardId]];
 
-  $(ids.chalEmoji).textContent = result.chEmoji;
+  setAvatar($(ids.chalEmoji), result.chEmoji, result.chAvatar, 'lcAvatar');
   $(ids.chalName).textContent = result.challenger;
+  $(ids.chalLevel).textContent = 'LVL ' + result.chLevel;
   const chPct = Math.max(0, (result.chHp / result.chMaxHp) * 100);
   $(ids.chalHp).style.width = chPct + '%';
   $(ids.chalHp).className = 'lcHpFill ' + hpClass(chPct);
+  $(ids.chalHpText).textContent = 'HP ' + result.chHp + '/' + result.chMaxHp;
 
-  $(ids.champEmoji).textContent = result.cEmoji;
+  setAvatar($(ids.champEmoji), result.cEmoji, result.cAvatar, 'lcAvatar');
   $(ids.champName).textContent = result.champion;
+  $(ids.champLevel).textContent = 'LVL ' + result.cLevel;
   const cPct = Math.max(0, (result.cHp / result.cMaxHp) * 100);
   $(ids.champHp).style.width = cPct + '%';
   $(ids.champHp).className = 'lcHpFill ' + hpClass(cPct);
+  $(ids.champHpText).textContent = 'HP ' + result.cHp + '/' + result.cMaxHp;
 }
 
-function animateLeagueHit(cardId, damage) {
+function animateLeagueHit(cardId, damage, label) {
   const card = $(cardId);
   if (!card) return;
   card.classList.remove('hitOro');
@@ -565,11 +622,34 @@ function animateLeagueHit(cardId, damage) {
 
   const dmgEl = document.createElement('div');
   dmgEl.className = 'lcDmg';
-  dmgEl.textContent = '-' + damage;
+  dmgEl.textContent = (label ? label + ' ' : '') + '-' + damage;
   dmgEl.style.left = '50%';
   dmgEl.style.top = '0.3em';
   card.appendChild(dmgEl);
   setTimeout(() => { if (dmgEl.parentNode) dmgEl.remove(); }, 800);
+
+  const avatar = card.querySelector('.lcChallenger .lcEmoji, .lcChallenger .lcAvatar');
+  if (avatar) {
+    avatar.style.transition = 'transform 0.12s ease';
+    avatar.style.transform = 'translateY(-4.5em)';
+    setTimeout(() => {
+      avatar.style.transform = 'translateY(0)';
+      setTimeout(() => { avatar.style.transition = ''; }, 200);
+    }, 180);
+  }
+}
+
+function animateLeagueHeal(cardId, heal, label) {
+  const card = $(cardId);
+  if (!card) return;
+
+  const healEl = document.createElement('div');
+  healEl.className = 'lcHeal';
+  healEl.textContent = (label ? label + ' ' : '') + '+' + heal + ' 🍃';
+  healEl.style.left = '50%';
+  healEl.style.top = '0.8em';
+  card.appendChild(healEl);
+  setTimeout(() => { if (healEl.parentNode) healEl.remove(); }, 1600);
 }
 
 // ─── League battles ───
@@ -580,7 +660,8 @@ socket.on('league_battles', (results) => {
   results.forEach((r, i) => {
     if (i >= leagueIds.length) return;
     fillLeagueCard(leagueIds[i], r);
-    animateLeagueHit(leagueIds[i], r.damage);
+    if (r.damage > 0) animateLeagueHit(leagueIds[i], r.damage, r.interactionLabel);
+    if (r.heal > 0) animateLeagueHeal(leagueIds[i], r.heal, r.interactionLabel);
   });
 
   // Podium hit feedback only for oro
@@ -594,17 +675,16 @@ socket.on('league_battles', (results) => {
     if (oldDmg) oldDmg.remove();
     const dmgEl = document.createElement('div');
     dmgEl.className = 'podDmg';
-    dmgEl.textContent = '-' + oro.damage;
+    const net = oro.heal - oro.damage;
+    const netLabel = oro.interactionLabel || '';
+    dmgEl.textContent = netLabel ? netLabel + ' ' : '';
+    dmgEl.textContent += net >= 0 ? '+' + net : net;
     pg.appendChild(dmgEl);
     setTimeout(() => { if (dmgEl.parentNode) dmgEl.remove(); }, 900);
   }
 });
 
-// ─── Battle tick (backward compat) ───
-socket.on('battle_tick', (d) => {
-  // Just update oro league from battle_tick as fallback
-  // Main update comes from league_battles
-});
+
 
 // ─── Battle swap (cambio de campeón) ───
 socket.on('battle_swap', (d) => {
@@ -622,23 +702,17 @@ socket.on('state', (s) => {
   const rankings = s.rankings || [];
   const fighters = s.fighters || {};
   const podConfigs = [
-    { row: 'podGold',    idx: 0, nameId: 'pgName', emojiId: 'pgEmoji', levelId: 'pgLevel', hpFillId: 'pgHp', hpTextId: 'pgHpText', winsId: 'pgWins', commentId: 'pgComment' },
-    { row: 'podPlatino', idx: 2, nameId: 'ppName', emojiId: 'ppEmoji', levelId: 'ppLevel', hpFillId: 'ppHp', hpTextId: 'ppHpText', winsId: 'ppWins', commentId: 'ppComment' },
-    { row: 'podBronce',  idx: 4, nameId: 'pbName', emojiId: 'pbEmoji', levelId: 'pbLevel', hpFillId: 'pbHp', hpTextId: 'pbHpText', winsId: 'pbWins', commentId: 'pbComment' },
+    { row: 'podGold',    idx: 0, nameId: 'pgName', emojiId: 'pgEmoji', commentId: 'pgComment' },
+    { row: 'podPlatino', idx: 2, nameId: 'ppName', emojiId: 'ppEmoji', commentId: 'ppComment' },
+    { row: 'podBronce',  idx: 4, nameId: 'pbName', emojiId: 'pbEmoji', commentId: 'pbComment' },
   ];
   for (const cfg of podConfigs) {
     const row = $(cfg.row);
     if (rankings.length > cfg.idx && fighters[rankings[cfg.idx]]) {
       const f = fighters[rankings[cfg.idx]];
       row.classList.remove('emptyRow');
-      $(cfg.emojiId).textContent = f.emoji;
+      setAvatar($(cfg.emojiId), f.emoji, f.avatarUrl, 'podAvatar');
       $(cfg.nameId).textContent = rankings[cfg.idx];
-      $(cfg.levelId).textContent = 'LVL ' + f.level;
-      const pct = Math.max(0, (f.hp / f.maxHp) * 100);
-      $(cfg.hpFillId).style.width = pct + '%';
-      $(cfg.hpFillId).className = 'podHpFill ' + hpClass(pct);
-      $(cfg.hpTextId).textContent = 'HP ' + f.hp + '/' + f.maxHp;
-      $(cfg.winsId).textContent = '🏆' + (f.wins || 0);
       // Comment only on gold row
       if (cfg.idx === 0) {
         const ct = $(cfg.commentId);
@@ -669,9 +743,10 @@ socket.on('state', (s) => {
       const posClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
       const crown = i === 0 ? '👑' : '';
       const puntuacion = (f.xp || 0) + (f.donations || 0) * 10;
+      const rankEmojiHtml = f.avatarUrl ? '<img src="' + f.avatarUrl + '" class="rankAvatar" alt="">' : f.emoji;
       el.innerHTML = `
         <span class="rankPos ${posClass}">${crown || (i + 1)}</span>
-        <span class="rankEmoji">${f.emoji}</span>
+        <span class="rankEmoji">${rankEmojiHtml}</span>
         <span class="rankName">${name}</span>
         <span class="rankScore">★${puntuacion}</span>
       `;
@@ -694,6 +769,7 @@ socket.on('state', (s) => {
       const stub = {
         champion: rankings[a], challenger: rankings[b],
         cEmoji: champ.emoji, chEmoji: chal.emoji,
+        cAvatar: champ.avatarUrl, chAvatar: chal.avatarUrl,
         cLevel: champ.level, chLevel: chal.level,
         cHp: champ.hp, cMaxHp: champ.maxHp,
         chHp: chal.hp, chMaxHp: chal.maxHp,
